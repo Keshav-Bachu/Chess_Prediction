@@ -50,7 +50,7 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 1000, batch = 1):
     flattened = flatten(layer1)
     
     fully_connected = fc_layer(flattened, flattened.get_shape()[1:4].num_elements(), 1)
-    
+    #xh
     
     
     
