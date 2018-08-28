@@ -50,7 +50,24 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 1000, batch = 1):
     flattened = flatten(layer1)
     
     fully_connected = fc_layer(flattened, flattened.get_shape()[1:4].num_elements(), 1)
-    #xh
+    
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=fully_connected,labels=yTrain)
+    cost = tf.reduce_mean(cross_entropy)
+    
+    optimizer = tf.train.AdamOptimizer(learning_rate= learning_rate).minimize(cost)
+    
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
+        sess.run(init)
+        temp_cost = 0
+        for i in range (itterations):
+             _,temp_cost = sess.run([optimizer, cost], feed_dict={X:xTrain, Y: yTrain})
+            
+            if(itter % 100 == 0):
+                print("Current cost of the function after itteraton " + str(itter) + " is: \t" + str(temp_cost))
+                
+            costs.append(temp_cost)
+        
     
     
     
