@@ -19,7 +19,7 @@ def conv_net(input_data, num_input_channels, filter_shape, num_filters):
     conv_filt_shape = [filter_shape,filter_shape, num_input_channels, num_filters]
     
     weights = create_weights(conv_filt_shape)
-    bias = create_biases(10)
+    bias = create_biases(num_filters)
     
     out_layer = tf.nn.conv2d(input=input_data, filter= weights, strides= [1, 1, 1, 1], padding='SAME')
     out_layer += bias
@@ -47,7 +47,7 @@ def fc_layer(input,num_inputs,num_outputs, use_relu = False):
         
     return layer
 
-def model(xTrain, yTrain, learning_rate = 0.01, itterations = 1000, batch = 1):
+def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
     #ops.reset_default_graph()
     costs = []
     
@@ -55,14 +55,15 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 1000, batch = 1):
     y = tf.placeholder(tf.float32, [None, 1], name = 'y')
     
     layer1 = conv_net(x, 6, 8, 10)
-    #layer2 = conv_net(layer1, 10, 2, 5)
+    layer2 = conv_net(layer1, 10, 2, 20)
     
     #layer2 = conv_net(layer1, 32, 64, [5, 5], [2, 2], name='layer2')
-    flattened = flatten(layer1)
+    flattened = flatten(layer2)
     
-    fully_connected = fc_layer(flattened, flattened.get_shape()[1:4].num_elements(), 1)
+    fully_connected = fc_layer(flattened, flattened.get_shape()[1:4].num_elements(), 16)
+    fully_connected2 = fc_layer(fully_connected, fully_connected.get_shape()[1:4].num_elements(), 1)
     
-    cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(logits = fully_connected,labels=y)
+    cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(logits = fully_connected2,labels=y)
     
     cost = tf.reduce_mean(cross_entropy)
     optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
@@ -78,10 +79,14 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 1000, batch = 1):
                 print("Current cost of the function after itteraton " + str(itter) + " is: \t" + str(temp_cost))
                 
             costs.append(temp_cost)
+            
+        predTF = tf.nn.sigmoid(fully_connected2)
+        pred = sess.run([predTF], feed_dict={x:xTrain, y: yTrain})
+        return pred
         
     
     
-    
+
     
         
 
