@@ -39,7 +39,7 @@ def conv_net(input_data, num_input_channels, filter_shape, num_filters):
     out_layer = tf.nn.relu(out_layer)
     
     
-    return out_layer
+    return out_layer, weights, bias
 
 #flatten the layer inputted
     #used from reshape as all the elements are multiplied and taken to dimentions of [# examples, all elements multiplied ]
@@ -60,7 +60,7 @@ def fc_layer(input,num_inputs,num_outputs, use_relu = False):
     if(use_relu == True):
         layer = tf.nn.relu(layer)
         
-    return layer
+    return layer, weights, biases
 
 """
 Build and train the model
@@ -72,23 +72,33 @@ Input:
     batch: used for minibatches, which are not implimented at the moment =
 """
 def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
-    #ops.reset_default_graph()
     costs = []
+    weights_store = []
+    biases_store = []
     
     #set the placeholders for the x and y data
     x = tf.placeholder(tf.float32, shape = [None, 8,8,6], name = 'x')
     y = tf.placeholder(tf.float32, [None, 1], name = 'y')
     
     #make 2 layers of the CNN
-    layer1 = conv_net(x, 6, 8, 10)
-    layer2 = conv_net(layer1, 10, 2, 20)
+    layer1, weightTemp, biasTemp = conv_net(x, 6, 8, 10)
+    weights_store.append(weightTemp)
+    biases_store.append(biasTemp)
     
-    #layer2 = conv_net(layer1, 32, 64, [5, 5], [2, 2], name='layer2')
+    layer2, weightTemp, biasTemp = conv_net(layer1, 10, 2, 20)
+    weights_store.append(weightTemp)
+    biases_store.append(biasTemp)
+    
     flattened = flatten(layer2)
     
     #traditional NN fully connected layers
-    fully_connected = fc_layer(flattened, flattened.get_shape()[1:4].num_elements(), 16)
-    fully_connected2 = fc_layer(fully_connected, fully_connected.get_shape()[1:4].num_elements(), 1)
+    fully_connected, weightTemp, biasTemp = fc_layer(flattened, flattened.get_shape()[1:4].num_elements(), 16)
+    weights_store.append(weightTemp)
+    biases_store.append(biasTemp)
+    
+    fully_connected2, weightTemp, biasTemp = fc_layer(fully_connected, fully_connected.get_shape()[1:4].num_elements(), 1)
+    weights_store.append(weightTemp)
+    biases_store.append(biasTemp)
     
     cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(logits = fully_connected2,labels=y)
     
@@ -109,8 +119,8 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
             costs.append(temp_cost)
             
         predTF = tf.nn.sigmoid(fully_connected2)
-        pred = sess.run([predTF], feed_dict={x:xTrain, y: yTrain})
-        return pred
+        pred, weightsTemp, biasTemp = sess.run([predTF, weights_store, biases_store], feed_dict={x:xTrain, y: yTrain})     
+        return pred, weightsTemp, biasTemp
         
     
     

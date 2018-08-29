@@ -142,8 +142,18 @@ allY = np.append(bWin, yWin, 0)
 allX, allY = shuffle_in_unison(allX, allY)
 
 #run the NN model, prediction of CONV NN is the output
-prediction = CCT.model(allX,allY)
-prediction = prediction[0]
+prediction, weights, biases = CCT.model(allX,allY)
+prediction = prediction.astype(int)
+
+#np.save("WeightsTrained.npy", weights)
+#np.save("BiasesTrained.npy", biases)
+
+#prediction accuracy, push into a funcion or into the model training portion for easier readability
+totalExample = allY.shape[0]
+totalErrors = np.sum(np.abs(allY - prediction))
+accuracy  = 1 - totalErrors/totalExample
+
+print("Accuracy of model is: ", accuracy)
 
 
 
