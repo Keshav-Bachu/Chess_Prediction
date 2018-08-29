@@ -4,6 +4,9 @@ Created on Sat Aug 25 08:21:36 2018
 
 @author: Keshav Bachu
 """
+#References:
+#           https://cv-tricks.com/tensorflow-tutorial/training-convolutional-neural-network-for-image-classification/
+
 
 import tensorflow as tf
 import numpy as np
@@ -13,6 +16,15 @@ def create_weights(shape):
 
 def create_biases(size):
     return tf.Variable(tf.constant(0.05, shape=[size]))
+
+"""
+1 conv net layer
+Inputs:
+    input_data: data used to propogate prev layer to next layer
+    num_input_chanels: prev layer channels 
+    filter_shape: shape of cnn filter
+    num_filters: Number of filters used to eval input, translates to the num of channels outputted
+"""
 
 def conv_net(input_data, num_input_channels, filter_shape, num_filters):
     #weights = create_weights(shape=[conv_filter_size, conv_filter_size, num_input_channels, num_filters])
@@ -29,6 +41,8 @@ def conv_net(input_data, num_input_channels, filter_shape, num_filters):
     
     return out_layer
 
+#flatten the layer inputted
+    #used from reshape as all the elements are multiplied and taken to dimentions of [# examples, all elements multiplied ]
 def flatten(layer):
     layer_shape = layer.get_shape()
     num_features = layer_shape[1:4].num_elements()
@@ -36,6 +50,7 @@ def flatten(layer):
  
     return layer
 
+#Traditional NN structure of fully connected networks
 def fc_layer(input,num_inputs,num_outputs, use_relu = False):
     weights = create_weights(shape=[num_inputs, num_outputs])
     
@@ -47,19 +62,31 @@ def fc_layer(input,num_inputs,num_outputs, use_relu = False):
         
     return layer
 
+"""
+Build and train the model
+Input: 
+    xTrain: input data
+    yTrain: output answers for data
+    learning_rate: variable used for amount of change in gradient decent
+    itterations: # of cycles the model trains on
+    batch: used for minibatches, which are not implimented at the moment =
+"""
 def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
     #ops.reset_default_graph()
     costs = []
     
+    #set the placeholders for the x and y data
     x = tf.placeholder(tf.float32, shape = [None, 8,8,6], name = 'x')
     y = tf.placeholder(tf.float32, [None, 1], name = 'y')
     
+    #make 2 layers of the CNN
     layer1 = conv_net(x, 6, 8, 10)
     layer2 = conv_net(layer1, 10, 2, 20)
     
     #layer2 = conv_net(layer1, 32, 64, [5, 5], [2, 2], name='layer2')
     flattened = flatten(layer2)
     
+    #traditional NN fully connected layers
     fully_connected = fc_layer(flattened, flattened.get_shape()[1:4].num_elements(), 16)
     fully_connected2 = fc_layer(fully_connected, fully_connected.get_shape()[1:4].num_elements(), 1)
     
@@ -68,6 +95,7 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
     cost = tf.reduce_mean(cross_entropy)
     optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
     
+    #model training
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
