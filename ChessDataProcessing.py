@@ -14,6 +14,7 @@ import ConvChessTrain as CCT
 
 #borrowed from
 #https://stackoverflow.com/questions/4601373/better-way-to-shuffle-two-numpy-arrays-in-unison
+#allows the shufflinf of both data and solution set
 def shuffle_in_unison(a, b):
     assert len(a) == len(b)
     shuffled_a = np.empty(a.shape, dtype=a.dtype)
@@ -25,14 +26,19 @@ def shuffle_in_unison(a, b):
     return shuffled_a, shuffled_b
 
 
+
+#load and format the white win data
 with open('white_win.txt', 'r') as file:
     white_wins = file.read()
     
-    
+
+#seperate by games and turns    
 white_wins = white_wins.split('= = = = = = = =\n')
 for i in range(len(white_wins)):
     white_wins[i] = white_wins[i].split("- - - - - - - -\n")
 
+#all the games are pushed into a list and formatted to be games with channels representing turns
+#The games that are shorter than 6 turns (the channel that is used here) then the last turn is repeated
 gameList = []
 turnList = []
 for game in range(len(white_wins)):
@@ -79,7 +85,8 @@ wWin = wWin + 1
 
 
 
-
+#reference white formatting but for black wins text, has the same function, formatting data
+#next changes would push this code as a function for readability
 with open('black_win.txt', 'r') as file:
     white_wins = file.read()    
 white_wins = white_wins.split('= = = = = = = =\n')
@@ -134,10 +141,10 @@ allX = np.append(blackWinFormatted, whiteWinFormatted, 0)
 allY = np.append(bWin, yWin, 0)
 allX, allY = shuffle_in_unison(allX, allY)
 
+#run the NN model, prediction of CONV NN is the output
 prediction = CCT.model(allX,allY)
 prediction = prediction[0]
-prediction = prediction.reshape[prediction.shape[0],]
-prediction = np.ndarray.tolist(prediction[0])
+
 
 
 
