@@ -18,12 +18,18 @@ def create_biases(size):
     return tf.Variable(tf.constant(0.05, shape=[size]))
 
 """
-1 conv net layer
-Inputs:
+CNN layer builder, used as a building block for the model
+
+Args:
     input_data: data used to propogate prev layer to next layer
     num_input_chanels: prev layer channels 
     filter_shape: shape of cnn filter
     num_filters: Number of filters used to eval input, translates to the num of channels outputted
+    
+Returns:
+    out_layer: CNN outpt after running the filters
+    weights: Weights used as for training
+    bias: Biases used for training
 """
 
 def conv_net(input_data, num_input_channels, filter_shape, num_filters):
@@ -41,8 +47,15 @@ def conv_net(input_data, num_input_channels, filter_shape, num_filters):
     
     return out_layer, weights, bias
 
-#flatten the layer inputted
-    #used from reshape as all the elements are multiplied and taken to dimentions of [# examples, all elements multiplied ]
+"""
+Partial step in convertint CNN layer to a fully connected layer and thus must by flattened first
+
+Args:
+    layer: CNN layer that needs to be flattened
+
+Returns:
+    layer: The input layer reshaped to be flat, of size [# examples, sum of all values from prev layer]
+"""
 def flatten(layer):
     layer_shape = layer.get_shape()
     num_features = layer_shape[1:4].num_elements()
@@ -50,7 +63,20 @@ def flatten(layer):
  
     return layer
 
-#Traditional NN structure of fully connected networks
+"""
+Fully connected layer of the NN used after flattening the CNN
+
+Args:
+    input: Input of the previous layer that will be used to build network further
+    num_inputs: Num of neuron inputs of the network
+    num_outputs: Output neurons of the network
+    use_relu: Toggle option for the relu function
+
+Returns:
+    layer: Propogated next layer with as many neurons as specified in the num_output
+    weights: Weights used in the training of this layer
+    biases: Bias values used in this layer
+"""
 def fc_layer(input,num_inputs,num_outputs, use_relu = False):
     weights = create_weights(shape=[num_inputs, num_outputs])
     
@@ -63,13 +89,22 @@ def fc_layer(input,num_inputs,num_outputs, use_relu = False):
     return layer, weights, biases
 
 """
-Build and train the model
-Input: 
+Used to call the functions above and put the pieces together
+
+Args: 
     xTrain: input data
     yTrain: output answers for data
     learning_rate: variable used for amount of change in gradient decent
     itterations: # of cycles the model trains on
-    batch: used for minibatches, which are not implimented at the moment =
+    batch: used for minibatches, which are not implimented at the moment
+
+Returns:
+    pred: Numpy array of the predictions from the input data, shape of [# examples, 1]
+    weightsTemp: List of all the weights used in the training of the network
+    biasTemp: List of all the biases used in the training of the network
+    
+    Note: The weights and biases were returned so they can be stored for later use
+    
 """
 def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
     costs = []
@@ -89,6 +124,7 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
     weights_store.append(weightTemp)
     biases_store.append(biasTemp)
     
+    #flatten for use in fully connected layer
     flattened = flatten(layer2)
     
     #traditional NN fully connected layers
@@ -121,11 +157,3 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
         predTF = tf.nn.sigmoid(fully_connected2)
         pred, weightsTemp, biasTemp = sess.run([predTF, weights_store, biases_store], feed_dict={x:xTrain, y: yTrain})     
         return pred, weightsTemp, biasTemp
-        
-    
-    
-
-    
-        
-
-#https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/convolutional_network.py

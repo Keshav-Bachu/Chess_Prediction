@@ -25,135 +25,114 @@ def shuffle_in_unison(a, b):
         shuffled_b[new_index] = b[old_index]
     return shuffled_a, shuffled_b
 
+"""
+Format the data for the input of the CNN model by reading data from a text file, specific to chess matches
 
+Args:
+    name: Name of the input text file used to read the data
+    answer_value: The value output the answer is stored with
 
-#load and format the white win data
-with open('white_win.txt', 'r') as file:
-    white_wins = file.read()
-    
-
-#seperate by games and turns    
-white_wins = white_wins.split('= = = = = = = =\n')
-for i in range(len(white_wins)):
-    white_wins[i] = white_wins[i].split("- - - - - - - -\n")
-
-#all the games are pushed into a list and formatted to be games with channels representing turns
-#The games that are shorter than 6 turns (the channel that is used here) then the last turn is repeated
-gameList = []
-turnList = []
-for game in range(len(white_wins)):
-    turnList = []
-    for turn in range(len(white_wins[game])):
-        white_wins[game][turn] = list(white_wins[game][turn])
-        if ' ' in white_wins[game][turn]:
-            #white_wins[game][turn].remove(' ')
-            white_wins[game][turn][:] = [x for x in white_wins[game][turn] if x != ' ']
-        for char in range(len(white_wins[game][turn])):
-            white_wins[game][turn][char] = ord(white_wins[game][turn][char])
-        #white_wins[game][turn] = white_wins[game][turn].remove(32)
-        white_wins[game][turn][:] = [x for x in white_wins[game][turn] if x != 10]
+Returns:
+    formattedData: Numpy array output of the data, with the shape of [# examples, data rows, data cols, 6]
+    yOuyput: Numpy array corresponding to the answers of the input data, with the shape of [# examples, 1] 
+"""
+def load_data(name, answer_value):
+    with open(name, 'r') as file:
+        _wins = file.read()
         
-        if(len(white_wins[game][turn]) != 0):
-            temp = np.asarray(white_wins[game][turn], np.float32)
-            temp = temp.reshape(8,8)
-            turnList.append(temp)
-    gameList.append(turnList)
     
-
-for game in range(len(gameList)):
-    if(len(gameList[game]) >= 6):
-        gameList[game] = gameList[0][len(gameList[0]) - 6:]
-    elif(len(gameList[game]) != 0):
-        while(len(gameList[game]) < 6):
-            gameList[game].append(gameList[game][0])
-
-gameList.remove(gameList[len(gameList) - 1]) 
-
-whiteWinFormatted = []
-x = 0
-for game in range(len(gameList)):
-    whiteWinFormatted.append(gameList[game][0])
-    for turn in range (1, 6):
-        whiteWinFormatted[x] = np.dstack((whiteWinFormatted[x], gameList[game][turn]))
-    x = x + 1
-
-#whiteWinFormatted is 8x8x6 , 6 representing the last 6 turns, now the data can be sent to a conv NN
-whiteWinFormatted = np.asarray(whiteWinFormatted)
-wWin = np.zeros((19,1))
-wWin = wWin + 1
-
-
-
-
-#reference white formatting but for black wins text, has the same function, formatting data
-#next changes would push this code as a function for readability
-with open('black_win.txt', 'r') as file:
-    white_wins = file.read()    
-white_wins = white_wins.split('= = = = = = = =\n')
-for i in range(len(white_wins)):
-    white_wins[i] = white_wins[i].split("- - - - - - - -\n")
-
-gameList = []
-turnList = []
-for game in range(len(white_wins)):
+    #seperate by games and turns    
+    _wins = _wins.split('= = = = = = = =\n')
+    for i in range(len(_wins)):
+        _wins[i] = _wins[i].split("- - - - - - - -\n")
+    
+    #all the games are pushed into a list and formatted to be games with channels representing turns
+    #The games that are shorter than 6 turns (the channel that is used here) then the last turn is repeated
+    gameList = []
     turnList = []
-    for turn in range(len(white_wins[game])):
-        white_wins[game][turn] = list(white_wins[game][turn])
-        if ' ' in white_wins[game][turn]:
-            #white_wins[game][turn].remove(' ')
-            white_wins[game][turn][:] = [x for x in white_wins[game][turn] if x != ' ']
-        for char in range(len(white_wins[game][turn])):
-            white_wins[game][turn][char] = ord(white_wins[game][turn][char])
-        #white_wins[game][turn] = white_wins[game][turn].remove(32)
-        white_wins[game][turn][:] = [x for x in white_wins[game][turn] if x != 10]
+    for game in range(len(_wins)):
+        turnList = []
+        for turn in range(len(_wins[game])):
+            _wins[game][turn] = list(_wins[game][turn])
+            if ' ' in _wins[game][turn]:
+                #_wins[game][turn].remove(' ')
+                _wins[game][turn][:] = [x for x in _wins[game][turn] if x != ' ']
+            for char in range(len(_wins[game][turn])):
+                _wins[game][turn][char] = ord(_wins[game][turn][char])
+            #_wins[game][turn] = _wins[game][turn].remove(32)
+            _wins[game][turn][:] = [x for x in _wins[game][turn] if x != 10]
+            
+            if(len(_wins[game][turn]) != 0):
+                temp = np.asarray(_wins[game][turn], np.float32)
+                temp = temp.reshape(8,8)
+                turnList.append(temp)
+        gameList.append(turnList)
         
-        if(len(white_wins[game][turn]) != 0):
-            temp = np.asarray(white_wins[game][turn], np.float32)
-            #print(temp.shape, ' ', game)
-            temp = temp.reshape(8,8)
-            turnList.append(temp)
-    gameList.append(turnList)
     
+    for game in range(len(gameList)):
+        if(len(gameList[game]) >= 6):
+            gameList[game] = gameList[0][len(gameList[0]) - 6:]
+        elif(len(gameList[game]) != 0):
+            while(len(gameList[game]) < 6):
+                gameList[game].append(gameList[game][0])
+    
+    gameList.remove(gameList[len(gameList) - 1]) 
+    
+    formattedData = []
+    x = 0
+    for game in range(len(gameList)):
+        formattedData.append(gameList[game][0])
+        for turn in range (1, 6):
+            formattedData[x] = np.dstack((formattedData[x], gameList[game][turn]))
+        x = x + 1
+    
+    #formattedData is 8x8x6 , 6 representing the last 6 turns, now the data can be sent to a conv NN
+    formattedData = np.asarray(formattedData)
+    yOutput = np.zeros((formattedData.shape[0],1))
+    yOutput = yOutput + answer_value
+    return formattedData, yOutput
 
-for game in range(len(gameList)):
-    if(len(gameList[game]) >= 6):
-        gameList[game] = gameList[0][len(gameList[0]) - 6:]
-    elif(len(gameList[game]) != 0):
-        while(len(gameList[game]) < 6):
-            gameList[game].append(gameList[game][0])
+"""
+Calculate the accuracy of the returned predictions
 
-gameList.remove(gameList[len(gameList) - 1]) 
+Args:
+    allY: The answer key of the values inputted
+    predictions: the output from the network, that is compared here
+    
+Returns:
+    accuracy = Accuracy value that is calculated
 
-blackWinFormatted = []
-x = 0
-for game in range(len(gameList)):
-    blackWinFormatted.append(gameList[game][0])
-    for turn in range (1, 6):
-        blackWinFormatted[x] = np.dstack((blackWinFormatted[x], gameList[game][turn]))
-    x = x + 1
+"""
+def compute_Accuracy(allY, predictions):
+    totalExample = allY.shape[0]
+    totalErrors = np.sum(np.abs(allY - prediction))
+    accuracy  = 1 - totalErrors/totalExample
 
-#blackWinFormatted is 8x8x6 , 6 representing the last 6 turns, now the data can be sent to a conv NN
-blackWinFormatted = np.asarray(blackWinFormatted)
-bWin = np.zeros((19,1))
-bWin = bWin + 0
+    print("Accuracy of model is: ", accuracy)
+    return accuracy
 
+
+
+#load and format the white/black win data
+whiteWinFormatted, wWin = load_data('white_win.txt', 0)
+blackWinFormatted, bWin = load_data('black_win.txt', 1)
+
+#combine the data
 allX = np.append(blackWinFormatted, whiteWinFormatted, 0)
-allY = np.append(bWin, yWin, 0)
+allY = np.append(bWin, wWin, 0)
 allX, allY = shuffle_in_unison(allX, allY)
 
 #run the NN model, prediction of CONV NN is the output
 prediction, weights, biases = CCT.model(allX,allY)
 prediction = prediction.astype(int)
 
+compute_Accuracy(allY, prediction)
+
 #np.save("WeightsTrained.npy", weights)
 #np.save("BiasesTrained.npy", biases)
 
 #prediction accuracy, push into a funcion or into the model training portion for easier readability
-totalExample = allY.shape[0]
-totalErrors = np.sum(np.abs(allY - prediction))
-accuracy  = 1 - totalErrors/totalExample
 
-print("Accuracy of model is: ", accuracy)
 
 
 
