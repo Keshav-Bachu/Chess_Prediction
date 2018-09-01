@@ -139,7 +139,7 @@ testPredictions = testPredictions.astype(int)
 
 compute_Accuracy(trainY, prediction)
 
-print("Test "),
+print("Test ", end = "")
 compute_Accuracy(testY, testPredictions)
 
 #np.save("WeightsTrained.npy", weights)
