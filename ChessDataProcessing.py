@@ -105,11 +105,12 @@ Returns:
 """
 def compute_Accuracy(allY, predictions):
     totalExample = allY.shape[0]
-    totalErrors = np.sum(np.abs(allY - prediction))
+    totalErrors = np.sum(np.abs(allY - predictions))
     accuracy  = 1 - totalErrors/totalExample
-
+    
     print("Accuracy of model is: ", accuracy)
     return accuracy
+
 
 
 
@@ -120,20 +121,28 @@ blackWinFormatted, bWin = load_data('black_win.txt', 1)
 #combine the data
 allX = np.append(blackWinFormatted, whiteWinFormatted, 0)
 allY = np.append(bWin, wWin, 0)
+
 allX, allY = shuffle_in_unison(allX, allY)
 
-#run the NN model, prediction of CONV NN is the output
-prediction, weights, biases = CCT.model(allX,allY)
-prediction = prediction.astype(int)
+testX = allX[170:]
+testY = allY[170:]
 
-compute_Accuracy(allY, prediction)
+trainX = allX[:170]
+trainY = allY[:170]
+
+#run the NN model, prediction of CONV NN is the output
+#prediction, weights, biases = CCT.model(trainX,trainY)
+prediction, testPredictions, weights, biases = CCT.model(trainX,trainY, testX, testY)
+
+prediction = prediction.astype(int)
+testPredictions = testPredictions.astype(int)
+
+compute_Accuracy(trainY, prediction)
+
+print("Test "),
+compute_Accuracy(testY, testPredictions)
 
 #np.save("WeightsTrained.npy", weights)
 #np.save("BiasesTrained.npy", biases)
 
 #prediction accuracy, push into a funcion or into the model training portion for easier readability
-
-
-
-
-

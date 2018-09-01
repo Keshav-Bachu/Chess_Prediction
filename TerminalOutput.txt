@@ -6,11 +6,12 @@ Created on Wed Aug 29 15:31:53 2018
 @author: keshavbachu
 """
 
-runfile('/Users/keshavbachu/Documents/User Space/Programming/Extra/Chess Prediction/ChessDataProcessing.py', wdir='/Users/keshavbachu/Documents/User Space/Programming/Extra/Chess Prediction')
+In [54]: runfile('/Users/keshavbachu/Documents/User Space/Programming/Program Files/Chess Prediction/ChessDataProcessing.py', wdir='/Users/keshavbachu/Documents/User Space/Programming/Program Files/Chess Prediction')
 Reloaded modules: ConvChessTrain
-Current cost of the function after itteraton 0 is:      0.7381386
-Current cost of the function after itteraton 100 is:    9.574568e-06
-Current cost of the function after itteraton 200 is:    6.7041738e-06
-Current cost of the function after itteraton 300 is:    4.819912e-06
-Current cost of the function after itteraton 400 is:    3.5584687e-06
-Accuracy of model is:  0.9473684210526316
+Current cost of the function after itteraton 0 is:      0.7087254
+Current cost of the function after itteraton 100 is:    0.00021462073
+Current cost of the function after itteraton 200 is:    6.733679e-05
+Current cost of the function after itteraton 300 is:    3.2664248e-05
+Current cost of the function after itteraton 400 is:    1.9208057e-05
+Accuracy of model is:  0.9882352941176471
+Test Accuracy of model is:  1.0

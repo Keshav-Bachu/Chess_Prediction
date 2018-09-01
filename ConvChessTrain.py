@@ -106,7 +106,7 @@ Returns:
     Note: The weights and biases were returned so they can be stored for later use
     
 """
-def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
+def model(xTrain, yTrain, xTest = np.zeros((0)), yTest = np.zeros((0)), learning_rate = 0.01, itterations = 500, batch = 1):
     costs = []
     weights_store = []
     biases_store = []
@@ -155,5 +155,11 @@ def model(xTrain, yTrain, learning_rate = 0.01, itterations = 500, batch = 1):
             costs.append(temp_cost)
             
         predTF = tf.nn.sigmoid(fully_connected2)
-        pred, weightsTemp, biasTemp = sess.run([predTF, weights_store, biases_store], feed_dict={x:xTrain, y: yTrain})     
-        return pred, weightsTemp, biasTemp
+        pred, weightsTemp, biasTemp = sess.run([predTF, weights_store, biases_store], feed_dict={x:xTrain, y: yTrain}) 
+        
+        if(xTest.shape == (0,) and yTest.shape == (0,)):
+            return pred, weightsTemp, biasTemp
+        
+        else:
+            testPrediction = sess.run(predTF, feed_dict={x:xTest, y: yTest})
+            return pred, testPrediction, weightsTemp, biasTemp
