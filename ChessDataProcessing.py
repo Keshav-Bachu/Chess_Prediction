@@ -121,7 +121,6 @@ blackWinFormatted, bWin = load_data('black_win.txt', 1)
 #combine the data
 allX = np.append(blackWinFormatted, whiteWinFormatted, 0)
 allY = np.append(bWin, wWin, 0)
-
 allX, allY = shuffle_in_unison(allX, allY)
 
 testX = allX[170:]
